@@ -1,0 +1,11 @@
+<phpunit colors="true" bootstrap="./test/bootstrap.php" backupGlobals="false">
+    <testsuite name="Test Suite">
+      <directory>./test/suite/</directory>
+    </testsuite>
+    <filter>
+      <whitelist>
+        <file>./lib/mostest.php</file>
+        <file>./lib/cli.php</file>
+      </whitelist>
+    </filter>
+</phpunit>

@@ -1,0 +1,66 @@
+<?php
+namespace mostest\cli {
+  /** Just trying out the namespace block syntax */
+
+  /**
+   * Given an array of potential filenames/stream URIs, open each one
+   *
+   * Given an array of potential filenames/stream URIs, open each one and return
+   * an array of stream resources or boolean `false` for URIs which fail to `fopen()`
+   *
+   * @param string[] $args Array of     filenames/stream URIs
+   * @param bool     $close_on_shutdown Optional (default `true`). Register a
+   *                                    shutdown function to close all opened
+   *                                    stream resources
+   * @return (resource|false)[]         Array of stream resource, keyed by URI,
+   *                                    or boolean `false`
+   */
+  function open_files(array $args, $close_on_shutdown = true, &$close_func = null) {
+    $handles = array();
+
+    foreach($args as $arg) {
+      // There's really no way to avoid using the squelch operator. So, until
+      // PHP supports a better idiom for this, we'll be squelching calls to fopen()
+      $handles[$arg] = @fopen($arg, 'r');
+    }
+
+    $close_func = function () use ($handles) {
+      $stderr = defined('STDERR') && is_resource(STDERR) ? STDERR : fopen('php://stderr', 'w');
+
+      foreach ($handles as $handle) {
+        if (!is_resource($handle))
+          continue;
+
+        if (!@fclose($handle)) {
+          fwrite($stderr, 'Error closing stream: ' . @stream_get_meta_data($handle)['uri'] . PHP_EOL);
+        }
+      }
+
+      // Be a good citizen and release the file descriptor if we opened it
+      defined('STDERR') && is_resource(STDERR) ?: fclose($stderr);
+    };
+
+    // I'm not sure how to test this, but I'm pretty
+    // sure having it is better than not having it
+    if (count($handles) and $close_on_shutdown) {
+      register_shutdown_function($close_func);
+    }
+
+    return $handles;
+  }
+
+  /**
+   * Filter out '-' and '--' flags from, say, $argv
+   *
+   * @param string[] $args an array like $argv, or maybe $_SERVER['ARGV']
+   * @return string[]      an array without flags
+   */
+  function filter_flags(array $args) {
+    return array_merge(array_filter($args, function ($val) use (&$stop) {
+      if (!isset($stop) and $val === '--')
+        $stop = $val === '--';
+
+      return $stop || strpos($val, '-') !== 0;
+    }));
+  }
+}

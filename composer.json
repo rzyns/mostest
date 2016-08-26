@@ -1,0 +1,26 @@
+{
+    "name": "rzyns/mostest",
+    "description": "Get the word with the mostest characters from a/some stream/s",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Janusz Dziurzyński",
+            "email": "janusz@forserial.org"
+        }
+    ],
+    "autoload": {
+        "files": [
+          "lib/mostest.php",
+          "lib/cli.php"
+        ]
+    },
+    "require": {
+      "php": ">=5.4.0",
+      "ext-mbstring": "*"
+    },
+    "bin": ["bin/mostest"],
+    "scripts": {
+      "test": "phpunit"
+    }
+}
